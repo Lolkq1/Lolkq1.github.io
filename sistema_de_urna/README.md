@@ -15,3 +15,5 @@ fetch('/resenha').then( res =>
 app.get('/resenha', (req,res) => {
     bcrypt.hash('ney', 3).then(hash => res.send(hash))
 })
+
+// para ver todos os commits desse projeto => github.com/Lolkq1/trabalho_4_bim
