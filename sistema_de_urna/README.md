@@ -1,4 +1,4 @@
-sistema simples de votação, incluindo criptografia com uso do módulo 'bcrypt' e geração de tokens de sessão por meio do módulo 'crypto', com armazenamento por parte do cliente por meio do <br>
+sistema simples de votação, incluindo criptografia com uso do módulo 'bcrypt' e geração de tokens de sessão por meio do módulo 'crypto', com armazenamento por parte do cliente por meio do
 Local Storage e armazenamento de dados por parte do servidor com o módulo 'mysql2' que permite uso do mysql local.<br>
 --> setup<br>
 CREATE DATABASE candidatos;<br>
