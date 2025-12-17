@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ja tem conta?</title>
+    <link rel="stylesheet" href="style2.css">
+    <script src="script2.js" defer></script>
+</head>
+<body>
+
+    <div id="mainDiv">
+        <h2 id="mainTitulo">Entre ou crie sua conta.</h2>
+        <button id="btn1">Criar conta</button>
+        <button id="btn2">Entrar</button>
+        <button id="btn3">Admin</button>
+        <img class="govimg" src="gov.png" alt="">
+    </div>
+    <div id="createDiv">
+        <h2 id="mainTitulo2">Crie sua conta</h2>
+        <label for="nome">Nome</label>
+        <input type="text" required id="nome" maxlength="30">
+        <label for="resenha1" >Endereço de e-mail</label>
+        <input id="resenha1" type="email" required>
+        <label for="resenha2">Senha</label>
+        <input id="resenha2" type="password" required>
+        <button id="enois">Criar</button>
+        <p class="voltar" id="v1" onclick=" function switchTabs2(div) {
+    // pode nao funcionar por conta da prioridade ja q ta pegando por tag mas jaé
+    let divs = document.querySelectorAll('div')
+    div.style.display = 'inline'
+    for (x in divs) {
+        if (divs[x] !== div) {
+            divs[x].style.display = 'none'
+        }
+    }
+}
+switchTabs2(document.querySelector('#mainDiv'))
+">Voltar</p>
+        <img class="govimg" src="gov.png" alt="">
+    </div>
+    <div id="loginDiv">
+        <h2 id="mainTitulo3">Entre na sua conta</h2>
+        <label for="email">Email</label>
+        <input id="email" required>
+        <label for="senha">Senha</label>
+        <input id="senha" type="password" required>
+        <button id="enois2">Entrar</button>
+        <img class="govimg" src="gov.png" alt="">
+        <p class="voltar" id="v2" onclick=" function switchTabs2(div) {
+    // pode nao funcionar por conta da prioridade ja q ta pegando por tag mas jaé
+    let divs = document.querySelectorAll('div')
+    div.style.display = 'inline'
+    for (x in divs) {
+        if (divs[x] !== div) {
+            divs[x].style.display = 'none'
+        }
+    }
+}
+switchTabs2(document.querySelector('#mainDiv'))
+">Voltar</p>
+    </div>
+    <div id="adminDiv">
+        <h2 id="mainTitulo4">Entre na sua conta</h2>
+        <label for="email2">Email</label>
+        <input id="email2" required>
+        <label for="senha2">Senha</label>
+        <input id="senha2" type="password" required>
+        <button id="enois3">Entrar</button>
+        <img class="govimg" src="gov.png" alt="">
+        <p class="voltar" id="v3" onclick=" function switchTabs2(div) {
+    // pode nao funcionar por conta da prioridade ja q ta pegando por tag mas jaé
+    let divs = document.querySelectorAll('div')
+    div.style.display = 'inline'
+    for (x in divs) {
+        if (divs[x] !== div) {
+            divs[x].style.display = 'none'
+        }
+    }
+}
+switchTabs2(document.querySelector('#mainDiv'))
+">Voltar</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="script3.js" defer></script>
+    <link rel="stylesheet" href="style3.css">
+</head> 
+<body>
+    <div id="adminDiv">
+        <h2 id="mainTitulo4">Insira seu candidato</h2>
+        <label for="nome">Nome</label>
+        <input id="nome" required>
+        <label for="codigo">Código</label>
+        <input id="codigo" type="number" required>
+        <button id="btn">Inserir</button>
+        <img class="govimg" src="gov.png" alt="">
+        <p  class="voltar" onclick='let k = confirm("Deseja mesmo sair de sua conta?"); if (k) {
+                localStorage.setItem("sessionToken", undefined); localStorage.setItem("adm", 0); document.location.href="http://localhost:8080/telaInicial.html"
+            }'>Voltar</p>
+    </div>
+</body>
+</html>
