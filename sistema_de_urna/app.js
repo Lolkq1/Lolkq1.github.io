@@ -200,7 +200,7 @@ app.post('/login', (req, res) => {
                             let token = crypto.createHash('sha256').update(mili).digest('hex')
                             con.query("INSERT INTO sessoes VALUES (?,?)", [token, mbappe.email], (err) => {
                                 if (err) {console.log('token nao foi salvo. Login nao realizado.');res.status(500).send('não foi possível fazer o login. Tente novamente mais tarde.')} else {
-                                    console.log('usuário logado com sucesso. VAI PRA CIMA DELES SANTOS!!!!!!!!!!!!!!!!111111111')
+                                    console.log('usuário logado com sucesso.')
                                     res.send(token)
                                 }
                             })
@@ -240,7 +240,6 @@ app.post('/veradmin', (req, res)=> {
     let tk = ''
     req.on('data', (chunk) =>{tk+=chunk})
     req.on('end', () => {
-        console.log('cheou aqui em veradmin chiq chiq bahia', tk)
         con.query('SELECT * FROM sessoes_a WHERE token=?', [tk], (err, data) => {
             if (err) {
                 console.log('erro interno no servidor (ADM)')
