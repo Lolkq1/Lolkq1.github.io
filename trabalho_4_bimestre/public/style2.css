@@ -1,0 +1,137 @@
+
+
+body {
+    min-height: 100vh;
+    min-width: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+/* div {
+    display: none;
+} */
+
+div {
+    width: 300px;
+    height: 400px;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    box-shadow: 0 0 10px;
+    border-radius: 5px;
+    display: none;
+}
+
+label, input, button {
+    position: relative;
+    top: 10%;
+    left: 5%;
+    margin-top: 10px;
+    display: block;
+}
+
+#mainTitulo {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%);
+    width: 85%;
+}
+
+#mainTitulo2, #mainTitulo3 {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+}
+
+#mainTitulo3 {
+    width: 65%;
+}
+
+#mainTitulo4 {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%);
+    width: 65%;
+}
+
+button {
+    background-color: rgb(46, 119, 255);
+    padding: 5px 5px;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+}
+
+button:hover {
+    transition: 0.5s;
+    background-color: rgb(46, 255, 168);
+}
+
+#btn3 {
+    background-color: rgb(255, 0, 0);
+}
+
+#btn3:hover {
+    transition: 0.5s;
+    background-color: black;
+    color: white;
+}
+
+#btn1, #btn2, #btn3 {
+    position: absolute;
+    height: 40px;
+    width: 80px;
+    transform: translate(-50%);
+    left: 50%;
+
+}
+
+#btn1 {
+    top:25%;
+}
+
+#btn2 {
+    top: 45%;
+}
+
+#btn3 {
+    top: 65%;
+}
+
+#enois, #enois2 {
+    font-size: 15px;
+    width: 70px;
+    height: 40px;
+    left: 50%;
+    transform: translate(-50%);
+}
+
+
+#mainDiv {
+    display: inline;
+}
+
+.govimg {
+    width: 70px;
+    height: 70px;
+    position: absolute;
+    left: 98%;
+    top: 100%;
+    transform: translate(-100%, -100%);
+}
+
+
+input {
+    width: 90%;
+    height: 30px;
+}
+
+.voltar {
+    position: absolute;
+    top: 95%;
+    left: 5%;
+    transform: translate(-5%, -95%);
+    cursor: pointer;
+}
