@@ -33,7 +33,7 @@ btn2.addEventListener('click', () => {
     }).then(res => res.text()).then(re => {
         alert(re)
         if (res.ok) {
-            document.location.href = 'https://localhost:8080/homepage.html'
+            document.location.href = 'http://localhost:8080/homepage.html'
         }
     })
 })
