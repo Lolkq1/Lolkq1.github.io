@@ -24,24 +24,24 @@ app.post('/create', (req, res) => {
     req.on('end', () => {
         let b2 = JSON.parse(b)
         // ai vai terr... b2.nome, b2.email, b2.senha
-        bcrypt.hash(b.senha, 5).then(hash => {
+        bcrypt.hash(b2.senha, 5).then(hash => {
             if (b2.nome.length > 30 || b2.email.length > 100) {
                 console.log('os dados inseridos nao atendem aos criterios.')
                 res.status(401).send('dados nao atendem aos criterios.')
             } else {
                 con.query('SELECT * FROM usuarios WHERE email=?', [b2.email], (err,data) => {
-                if (err) {errsvr(res)} else {
-                    if (data.length > 1) {
+                if (err) {errsvr(res); console.log(2)} else {
+                    if (data.length > 0) {
                         console.log('email ja atribuido a uma conta')
                         res.status(401).send('esse email já está atribuido a uma conta.')
                     } else {
                         con.query('INSERT INTO usuarios VALUES (?,?,?)', [b2.email, b2.nome, hash], (err) => {
-                        if (err) {errsvr(res)} else {
+                        if (err) {errsvr(res); console.log(3)} else {
                             let dat = (new Date()).toString()
                             dat+=b2.email
                             let tkn = crypto.createHash('sha256').update(dat).digest('hex')
                             con.query('INSERT INTO tokens VALUES (?,?)', [b2.email, tkn] ,(err) => {
-                                if (err) {errsvr(res)} else {
+                                if (err) {errsvr(res); console.log(4)} else {
                                     res.cookie('sessionToken', tkn, {
                                         httpOnly: true,
                                         sameSite: 'strict',
@@ -115,25 +115,39 @@ app.post('/login', (req, res) => {
                 j2 = true
             }
         }
-        if (j2 != true || j != true) {
-            return false
-        } else {
-            let c = cookie.split(';')
-            for (x in c) {
-                for (y in c[x]) {
-                    if (c[x][y] == 'sessionToken') {
-                        return c[x][y+1]
+            if (j2 != true) {
+                return false
+            } else if (j == true) {
+                let c = cookie.split(';')
+                let a = []
+                for (x in c) {
+                    c[x].split('=')
+                }
+                for (x in a) {
+                    for (y in a[x]) {
+                        if (a[x][y] == 'sessionToken') {
+                            return a[x][parseInt(y+1)]
+                        }
                     }
                 }
-            }
-            return false
-        }
+                return false
+            } else {
+                    let c = cookie.split('=')
+                    for (x in c) {
+                            if (c[x] == 'sessionToken') {
+                                return c[parseInt(x+1)]
+                            }
+                    }
+                    return false
+                }
     }
     
 }
 
-app.get('ver', (req, res) => {
+app.get('/ver', (req, res) => {
     let w = parsec(req.headers.cookie)
+    console.log(req.headers.cookie)
+    console.log(w)
     if (w == false) {
         res.status(401).send('credenciais vazias. Usuário não está logado.')
     } else {
@@ -158,4 +172,6 @@ app.get('ver', (req, res) => {
     }
 })
 
-app.listen(8080)
+app.listen(8080, () => {
+    console.log('servidor rodando na porta 8080')
+})
