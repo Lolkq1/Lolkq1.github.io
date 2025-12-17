@@ -69,10 +69,8 @@ app.post('/login', (req, res) => {
     req.on('end', () => {
         let r2 = JSON.parse(r)
         //vai vir tipoo r2.email, r2.senha
-
         con.query("SELECT * FROM users WHERE email=?", (err, data) =>  {
-            if (err) {errsvr(res)} else {
-                if (data.length === 0) {
+            if (err) {errsvr(res)} else  if (data.length === 0) {
                     console.log('usuario inexistente.')
                     res.status(401).send('usuario inexistente')
                 } else {
@@ -91,16 +89,73 @@ app.post('/login', (req, res) => {
                             })
                             con.query('INSERT INTO tokens VALUES (?,?)', [r2.email, tkn], (err, data) => {
                                 if (err) {errsvr(res)} else {
-                                    
+                                    console.log('login autorizado.')
+                                    res.send('logado com sucesso!')
                                 }
                             })
                         }
                     })
                 }
 
-            }
+            
         })
     })
+})
+
+ export function parsec(cookie) {
+    if (typeof cookie != 'string') {
+        return false
+    } else {
+        let j = false
+        let j2 = false
+        for (x of cookie) {
+            if (x==';') {
+                j = true
+            } else if (x=='=') {
+                j2 = true
+            }
+        }
+        if (j2 != true || j != true) {
+            return false
+        } else {
+            let c = cookie.split(';')
+            for (x in c) {
+                for (y in c[x]) {
+                    if (c[x][y] == 'sessionToken') {
+                        return c[x][y+1]
+                    }
+                }
+            }
+            return false
+        }
+    }
+    
+}
+
+app.get('ver', (req, res) => {
+    let w = parsec(req.headers.cookie)
+    if (w == false) {
+        res.status(401).send('credenciais vazias. Usuário não está logado.')
+    } else {
+        con.query("SELECT * FROM tokens WHERE token=?", [w], (err, data) => {
+            if (err) {errsvr(res)} else {
+                if (data.length === 0) {
+                    res.status(401).send('token de sessão não registrado.')
+                } else {
+                    con.query('SELECT nome, email FROM usuarios WHERE email=?', [data[0].email], (err, data2) => {
+                        if (err) {errsvr(res)} else {
+                            if (data2.length === 0) {
+                                res.status(401).send('token registrado, porém usuário inexistente.')
+                            } else {
+                                res.send(JSON.stringify(data2[0]))
+                            }
+                        }        
+                    })
+                    
+                }
+            }
+        })
+    }
 })
 
 app.listen(8080)
