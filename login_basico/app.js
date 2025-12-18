@@ -36,7 +36,7 @@ app.post('/create', async (req, res) => {
                 return res.status(401).send('dados nao atendem aos criterios.')
             } else {
                 console.log(b2.email)
-                let [data] = await con.query("SELECT * FROM usuarios WHERE email=?", [b2.email]) // o erro q fica dando ta aqui ja verifiquei td
+                let [data] = await con.query("SELECT * FROM usuarios WHERE email=?", [b2.email])
                 if (data.length > 0){
                 console.log('email ja atribuido a uma conta')
                     return res.status(401).send('esse email já está atribuido a uma conta.')
@@ -55,77 +55,10 @@ app.post('/create', async (req, res) => {
         } catch {
             errsvr(res)
         }
-        // o antigo tá perdido, isso aqui é uma refatoraçao erronea do codigo
-        // try {
-        //     if (b2.nome.length > 30 || b2.email.length > 100) {
-        //         console.log('os dados inseridos nao atendem aos criterios.')
-        //         res.status(401).send('dados nao atendem aos criterios.')
-        //     } else {
-        //         let resenha = new Promise(con.query('SELECT * FROM usuarios WHERE email=?', [b2.email]))
-        //         let data = await resenha
-        //         try {
-        //             if (data.length > 0) {
-        //                 console.log('email ja atribuido a uma conta')
-        //                 res.status(401).send('esse email já está atribuido a uma conta.')
-        //             } else {
-        //                 let resenha2 = new Promise(con.query("INSERT INTO usuarios VALUES (?,?,?)", [b2.email, b2.nome, hash]))
-        //                 try {
-        //                     let dat = (new Date()).toString()
-        //                     dat+=b2.email
-        //                     let tkn = crypto.createHash('sha256').update(dat).digest('hex')
-                            
-        //                     try {
-        //                         res.cookie('sessionToken', tkn, {
-        //                                 httpOnly: true,
-        //                                 sameSite: 'strict',
-        //                             })
-        //                             res.send('usuario criado com sucesso.')
-        //                     } catch {
-        //                         errsvr(res)
-        //                     }
-        //                 } catch {
-        //                     errsvr(res)
-        //                 }
-        //             }
-        //         } catch {
-        //             errsvr(res)
-        //         }
-
-            //     con.query('SELECT * FROM usuarios WHERE email=?', [b2.email], (err,data) => {
-            //     if (err) {errsvr(res); console.log(2)} else {
-            //         if (data.length > 0) {
-            //             console.log('email ja atribuido a uma conta')
-            //             res.status(401).send('esse email já está atribuido a uma conta.')
-            //         } else {
-            //             con.query('INSERT INTO usuarios VALUES (?,?,?)', [b2.email, b2.nome, hash], (err) => {
-            //             if (err) {errsvr(res); console.log(3)} else {
-            //                 let dat = (new Date()).toString()
-            //                 dat+=b2.email
-            //                 let tkn = crypto.createHash('sha256').update(dat).digest('hex')
-            //                 con.query('INSERT INTO tokens VALUES (?,?)', [b2.email, tkn] ,(err) => {
-            //                     if (err) {errsvr(res); console.log(4)} else {
-            //                         res.cookie('sessionToken', tkn, {
-            //                             httpOnly: true,
-            //                             sameSite: 'strict',
-            //                         })
-            //                         res.send('usuario criado com sucesso.')
-            //                     }
-            //                 })
-            //             }
-            // })
-            //         }
-            //     }
-            // })
-        //     }
-        // } catch {
-        //     errsvr(res)
-        // }
-         
 })
 
 app.post('/login', async (req, res) => {
         let r2 = req.body
-        //novo
         try {
             let [data] = await con.query('SELECT * FROM usuarios WHERE email=?', [r2.email])
                 if (data.length === 0) {
@@ -153,89 +86,14 @@ app.post('/login', async (req, res) => {
         } catch {
             errsvr(res)
         }
-        //vai vir tipoo r2.email, r2.senha
-        // antigo
-        // con.query("SELECT * FROM usuarios WHERE email=?", [r2.email], (err, data) =>  {
-        //     if (err) {errsvr(res); } else  if (data.length === 0) {
-        //             console.log('usuario inexistente.')
-        //             res.status(401).send('usuario inexistente')
-        //         } else {
-        //             bcrypt.compare(r2.senha, data[0].hash).then(result => {
-        //                 if (!result) {
-        //                     console.log('senha incorreta inserida')
-        //                     res.status(401).send('senha incorreta inserida')
-        //                 } else {
-        //                     console.log('usuario logado')
-        //                     let dat = (new Date()).toString()
-        //                     dat+=r2.email
-        //                     let tkn = crypto.createHash('sha256').update(dat).digest('hex')
-        //                     res.cookie('sessionToken', tkn, {
-        //                         sameSite: 'strict',
-        //                         httpOnly: true
-        //                     })
-        //                     con.query('INSERT INTO tokens VALUES (?,?)', [r2.email, tkn], (err, data) => {
-        //                         if (err) {errsvr(res)} else {
-        //                             console.log('login autorizado.')
-        //                             res.send('logado com sucesso!')
-        //                         }
-        //                     })
-        //                 }
-        //             })
-        //         }
-
-            
-        // })
+       
 })
-
-//     meu parse manual sdds :( s2
-//     function parsec(cookie) {
-//     if (typeof cookie != 'string') {
-//         return false
-//     } else {
-//         let j = false
-//         let j2 = false
-//         for (x of cookie) {
-//             if (x==';') {
-//                 j = true
-//             } else if (x=='=') {
-//                 j2 = true
-//             }
-//         }
-//             if (j2 != true) {
-//                 return false
-//             } else if (j == true) {
-//                 let c = cookie.split(';')
-//                 let a = []
-//                 for (x in c) {
-//                     c[x].split('=')
-//                 }
-//                 for (x in a) {
-//                     for (y in a[x]) {
-//                         if (a[x][y] == 'sessionToken') {
-//                             return a[x][parseInt(y+1)]
-//                         }
-//                     }
-//                 }
-//                 return false
-//             } else {
-//                     let c = cookie.split('=')
-//                     for (x in c) {
-//                             if (c[x] == 'sessionToken') {
-//                                 return c[parseInt(x+1)]
-//                             }
-//                     }
-//                     return false
-//                 }
-//     }
-    
-// }
 
 app.get('/ver', async (req, res) => {
     console.log(req.cookies.sessionToken)
     if (req.cookies.sessionToken == ' ') {
         return res.status(401).send('credenciais vazias. Usuário não está logado.')
     } else {
-        //novo
         try {
             let [data] = await con.query("SELECT * FROM tokens WHERE token=?", [req.cookies.sessionToken])
             if (data.length === 0) {
@@ -251,25 +109,6 @@ app.get('/ver', async (req, res) => {
         } catch {
             errsvr(res)
         }
-        //antigo
-        // con.query("SELECT * FROM tokens WHERE token=?", [w], (err, data) => {
-        //     if (err) {errsvr(res)} else {
-        //         if (data.length === 0) {
-        //             res.status(401).send('token de sessão não registrado.')
-        //         } else {
-        //             con.query('SELECT nome, email FROM usuarios WHERE email=?', [data[0].email], (err, data2) => {
-        //                 if (err) {errsvr(res)} else {
-        //                     if (data2.length === 0) {
-        //                         res.status(401).send('token registrado, porém usuário inexistente.')
-        //                     } else {
-        //                         res.send(JSON.stringify(data2[0]))
-        //                     }
-        //                 }        
-        //             })
-                    
-        //         }
-        //     }
-        // })
     }
 })
 
