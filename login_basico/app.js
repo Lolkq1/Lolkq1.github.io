@@ -31,7 +31,7 @@ app.post('/create', async (req, res) => {
         let a = crypto.randomBytes(32)
         let tkn = crypto.createHash('sha256').update(a).digest('hex')
         try {
-            if (b2.nome.length > 30 || b2.email.length > 100) {
+            if (b2.nome.length > 30 || b2.email.length > 65) {
                 console.log('os dados inseridos nao atendem aos criterios.')
                 return res.status(401).send('dados nao atendem aos criterios.')
             } else {
