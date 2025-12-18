@@ -22,7 +22,7 @@ function switchTbs(tab) {
     }
     tab.style.display = 'flex'
 }
-// tem um problemao ai que nao ta dando certo pq ta selecionando todas as div corrigir dps
+
 
 fetch('/ver', {
     credentials: "include"
@@ -34,6 +34,9 @@ fetch('/ver', {
             btn.addEventListener("click", () => {
                 fetch('/create', {
                     method:'POST',
+                    headers: {
+                      "Content-Type": "application/json"  
+                    },
                     body: JSON.stringify({
                         nome: nome.value,
                         email: email.value,
@@ -52,6 +55,9 @@ fetch('/ver', {
             btn2.addEventListener('click', () => {
                 fetch('/login', {
                     method: 'POST',
+                    headers: {
+                      "Content-Type": "application/json"  
+                    },
                     body: JSON.stringify({
                         email: email2.value,
                         senha: senha2.value

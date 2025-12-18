@@ -6,37 +6,42 @@ const mysql2 = require('mysql2/promise')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
 const cookie_parser = require('cookie-parser')
-    const con = await mysql2.createConnection({
-    user: process.env.USER,
-    password: process.env.PASSWORD,
-    port: 3306,
-    database: 'teste'
-    })
-
 app.use(cookie_parser())
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 
-
-function errsvr(res) {
+async function funcao() {
+    const con = await mysql2.createConnection({
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    port: 3306,
+    database: process.env.DATABASE
+})
+    app.listen(8080, () => {
+    console.log('servidor rodando na porta 8080')
+})
+    
+function errsvr(res, p) {
     console.log('erro interno do servidor'); res.status(500).send('erro interno do sv')
 }
 
 app.post('/create', async (req, res) => {
-        try {
         let b2 = req.body
+        console.log(b2)
         let a = crypto.randomBytes(32)
         let tkn = crypto.createHash('sha256').update(a).digest('hex')
+        try {
             if (b2.nome.length > 30 || b2.email.length > 100) {
                 console.log('os dados inseridos nao atendem aos criterios.')
                 return res.status(401).send('dados nao atendem aos criterios.')
             } else {
-                let [data] = await con.query('SELECT * FROM usuarios WHERE email=?', [b2.email])
+                console.log(b2.email)
+                let [data] = await con.query("SELECT * FROM usuarios WHERE email=?", [b2.email]) // o erro q fica dando ta aqui ja verifiquei td
                 if (data.length > 0){
                 console.log('email ja atribuido a uma conta')
                     return res.status(401).send('esse email já está atribuido a uma conta.')
                 } else {
-                    let hash = await bcrypt.hash(b2.senha, 5)
+                    let hash = await bcrypt.hash(b2.senha, 10)
                     await con.query('INSERT INTO usuarios VALUES(?,?,?)', [b2.email, b2.nome, hash])
                     await con.query("INSERT INTO tokens VALUES (?,?)", [b2.email, tkn])
                     res.cookie('sessionToken', tkn, {
@@ -226,7 +231,8 @@ app.post('/login', async (req, res) => {
 // }
 
 app.get('/ver', async (req, res) => {
-    if (req.cookies.sessionToken == undefined) {
+    console.log(req.cookies.sessionToken)
+    if (req.cookies.sessionToken == ' ') {
         return res.status(401).send('credenciais vazias. Usuário não está logado.')
     } else {
         //novo
@@ -279,7 +285,6 @@ app.get('/apagar', (req, res) => {
     }
 })
 
-app.listen(8080, () => {
-    console.log('servidor rodando na porta 8080')
-})
+}
 
+funcao()
