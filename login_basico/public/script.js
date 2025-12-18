@@ -5,6 +5,23 @@ const btn = document.querySelector("#btn")
 const btn2 = document.querySelector("#btn2")
 const email2 = document.querySelector("#email2")
 const senha2 = document.querySelector("#senha2")
+const create = document.querySelector("#create")
+const login = document.querySelector("#login")
+const creatediv = document.querySelector("#createDiv")
+const logindiv = document.querySelector("#loginDiv")
+const cont = document.querySelector("#cont")
+
+function switchTbs(tab) {
+    let tabs = cont.querySelectorAll("div")
+    console.log(tabs)
+    for (x of tabs) {
+        if (x != tab) {
+            x.style.display = 'none'
+        }
+    }
+    tab.display = 'inline'
+}
+// tem um problemao ai que nao ta dando certo pq ta selecionando todas as div corrigir dps
 
 fetch('/ver', {
     credentials: "include"
@@ -44,6 +61,12 @@ fetch('/ver', {
                         document.location.href = 'http://localhost:8080/homepage.html'
                     }
                 })
+            })
+            create.addEventListener("click", () => {
+                switchTbs(creatediv)
+            })
+            login.addEventListener('click', () => {
+                switchTbs(logindiv)
             })
     }
 })

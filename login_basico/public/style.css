@@ -1,0 +1,14 @@
+body {
+    min-width: 100vh;
+    min-height: 100vh;
+}
+
+#createDiv, #loginDiv {
+    display: none;
+    width: 30%;
+}
+
+#mainDiv {
+    height: 30vh;
+    width: 30%;
+}
