@@ -5,26 +5,26 @@ const path = require('path')
 const mysql2 = require('mysql2/promise')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
-const con = await mysql2.createConnection({
+const cookie_parser = require('cookie-parser')
+    const con = await mysql2.createConnection({
     user: process.env.USER,
     password: process.env.PASSWORD,
     port: 3306,
     database: 'teste'
-})
+    })
+
+app.use(cookie_parser())
+app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
+
 
 function errsvr(res) {
     console.log('erro interno do servidor'); res.status(500).send('erro interno do sv')
 }
 
 app.post('/create', async (req, res) => {
-    let b = ''
-    req.on('data', (chunk) => {
-        b+=chunk
-    })
-    req.on('end', async () => {
         try {
-        let b2 = JSON.parse(b)
+        let b2 = req.body
         let a = crypto.randomBytes(32)
         let tkn = crypto.createHash('sha256').update(a).digest('hex')
             if (b2.nome.length > 30 || b2.email.length > 100) {
@@ -115,17 +115,11 @@ app.post('/create', async (req, res) => {
         // } catch {
         //     errsvr(res)
         // }
-        
-    }) 
+         
 })
 
 app.post('/login', async (req, res) => {
-    let r=''
-    req.on('data', (chunk) => {
-        r+=chunk
-    })
-    req.on('end', async () => {
-        let r2 = JSON.parse(r)
+        let r2 = req.body
         //novo
         try {
             let [data] = await con.query('SELECT * FROM usuarios WHERE email=?', [r2.email])
@@ -186,65 +180,62 @@ app.post('/login', async (req, res) => {
 
             
         // })
-    })
 })
 
-    function parsec(cookie) {
-    if (typeof cookie != 'string') {
-        return false
-    } else {
-        let j = false
-        let j2 = false
-        for (x of cookie) {
-            if (x==';') {
-                j = true
-            } else if (x=='=') {
-                j2 = true
-            }
-        }
-            if (j2 != true) {
-                return false
-            } else if (j == true) {
-                let c = cookie.split(';')
-                let a = []
-                for (x in c) {
-                    c[x].split('=')
-                }
-                for (x in a) {
-                    for (y in a[x]) {
-                        if (a[x][y] == 'sessionToken') {
-                            return a[x][parseInt(y+1)]
-                        }
-                    }
-                }
-                return false
-            } else {
-                    let c = cookie.split('=')
-                    for (x in c) {
-                            if (c[x] == 'sessionToken') {
-                                return c[parseInt(x+1)]
-                            }
-                    }
-                    return false
-                }
-    }
+//     meu parse manual sdds :( s2
+//     function parsec(cookie) {
+//     if (typeof cookie != 'string') {
+//         return false
+//     } else {
+//         let j = false
+//         let j2 = false
+//         for (x of cookie) {
+//             if (x==';') {
+//                 j = true
+//             } else if (x=='=') {
+//                 j2 = true
+//             }
+//         }
+//             if (j2 != true) {
+//                 return false
+//             } else if (j == true) {
+//                 let c = cookie.split(';')
+//                 let a = []
+//                 for (x in c) {
+//                     c[x].split('=')
+//                 }
+//                 for (x in a) {
+//                     for (y in a[x]) {
+//                         if (a[x][y] == 'sessionToken') {
+//                             return a[x][parseInt(y+1)]
+//                         }
+//                     }
+//                 }
+//                 return false
+//             } else {
+//                     let c = cookie.split('=')
+//                     for (x in c) {
+//                             if (c[x] == 'sessionToken') {
+//                                 return c[parseInt(x+1)]
+//                             }
+//                     }
+//                     return false
+//                 }
+//     }
     
-}
+// }
 
 app.get('/ver', async (req, res) => {
-    let w = parsec(req.headers.cookie)
-    console.log(req.headers.cookie)
-    console.log(w)
-    if (w == false) {
+    if (req.cookies.sessionToken == undefined) {
         return res.status(401).send('credenciais vazias. Usuário não está logado.')
     } else {
         //novo
         try {
-            let data = await con.query("SELECT * FROM tokens WHERE token=?", [w])
+            let [data] = await con.query("SELECT * FROM tokens WHERE token=?", [req.cookies.sessionToken])
             if (data.length === 0) {
                     return res.status(401).send('token de sessão não registrado.')
             } else {
-                let data2 = await con.query("SELECT nome, email FROM usuarios WHERE email=?", [data[0].email])
+                let [data2] = await con.query("SELECT nome, email FROM usuarios WHERE email=?", [data[0].email])
                 if (data2.length === 0) {
                     return res.status(401).send('token registrado, porém usuario inexistente.')
                 } else {
@@ -277,7 +268,7 @@ app.get('/ver', async (req, res) => {
 })
 
 app.get('/apagar', (req, res) => {
-    if (!parsec(req.headers.cookie)) {
+    if (req.cookies.sessionToken == undefined) {
         res.status(401).send('cookie inexistente.')
     } else {
         res.cookie('sessionToken', ' ', {
@@ -291,3 +282,4 @@ app.get('/apagar', (req, res) => {
 app.listen(8080, () => {
     console.log('servidor rodando na porta 8080')
 })
+
