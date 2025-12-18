@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const path = require('path')
@@ -5,8 +6,8 @@ const mysql2 = require('mysql2')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
 const con = mysql2.createConnection({
-    user: 'root',
-    password: 'santossempresantos',
+    user: process.env.USER,
+    password: process.env.PASSWORD,
     port: 3306,
     database: 'teste'
 })
@@ -75,7 +76,6 @@ app.post('/login', (req, res) => {
                     res.status(401).send('usuario inexistente')
                 } else {
                     bcrypt.compare(r2.senha, data[0].hash).then(result => {
-                        if (err) throw err;
                         if (!result) {
                             console.log('senha incorreta inserida')
                             res.status(401).send('senha incorreta inserida')
