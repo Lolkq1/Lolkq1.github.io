@@ -9,17 +9,18 @@ const create = document.querySelector("#create")
 const login = document.querySelector("#login")
 const creatediv = document.querySelector("#createDiv")
 const logindiv = document.querySelector("#loginDiv")
+const maindiv = document.querySelector("#mainDiv")
 const cont = document.querySelector("#cont")
-
+const voltar1 = document.querySelector("#voltar1")
+const voltar2 = document.querySelector("#voltar2")
 function switchTbs(tab) {
     let tabs = cont.querySelectorAll("div")
-    console.log(tabs)
     for (x of tabs) {
-        if (x != tab) {
+        if (x != tab && x.className == 'card') {
             x.style.display = 'none'
         }
     }
-    tab.display = 'inline'
+    tab.style.display = 'flex'
 }
 // tem um problemao ai que nao ta dando certo pq ta selecionando todas as div corrigir dps
 
@@ -67,6 +68,12 @@ fetch('/ver', {
             })
             login.addEventListener('click', () => {
                 switchTbs(logindiv)
+            })
+            voltar1.addEventListener("click", () => {
+                switchTbs(maindiv)
+            })
+            voltar2.addEventListener("click", () => {
+                switchTbs(maindiv)
             })
     }
 })

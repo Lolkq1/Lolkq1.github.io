@@ -69,12 +69,13 @@ app.post('/login', (req, res) => {
     req.on('end', () => {
         let r2 = JSON.parse(r)
         //vai vir tipoo r2.email, r2.senha
-        con.query("SELECT * FROM usuarios WHERE email=?", (err, data) =>  {
-            if (err) {errsvr(res)} else  if (data.length === 0) {
+        con.query("SELECT * FROM usuarios WHERE email=?", [r2.email], (err, data) =>  {
+            if (err) {errsvr(res); } else  if (data.length === 0) {
                     console.log('usuario inexistente.')
                     res.status(401).send('usuario inexistente')
                 } else {
-                    bcrypt.compare(r2.senha, data[0].senha).then(result => {
+                    bcrypt.compare(r2.senha, data[0].hash).then(result => {
+                        if (err) throw err;
                         if (!result) {
                             console.log('senha incorreta inserida')
                             res.status(401).send('senha incorreta inserida')
@@ -169,6 +170,18 @@ app.get('/ver', (req, res) => {
                 }
             }
         })
+    }
+})
+
+app.get('/apagar', (req, res) => {
+    if (!parsec(req.headers.cookie)) {
+        res.status(401).send('cookie inexistente.')
+    } else {
+        res.cookie('sessionToken', ' ', {
+            sameSite:'strict',
+            httpOnly: true
+        })
+        res.send('logout foi feito com sucesso')
     }
 })
 
