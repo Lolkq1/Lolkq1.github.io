@@ -292,12 +292,13 @@ async function rodar() {
                     break;
                 case 3:
                     msg = 'criação de cartão: erro no registro do cartao na base de dados.'
+                    break;
             }
             console.log(msg)
             return res.status(500).send('erro interno do servidor.')
         }
     })
-    
+
     app.listen(8080, () => {
         console.log('servidor rodando na porta 8080')
     })
