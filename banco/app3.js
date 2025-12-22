@@ -41,7 +41,7 @@ async function rodar() {
             try {
                 let k = jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY)
                 l=k
-                let j = await con.query('SELECT * FROM usuarios WHERE CPF=?', [k.payload.cpf])
+                let j = await con.query('SELECT * FROM usuarios WHERE CPF=?', [k.cpf])
                 switch (j[0].length) {
                     case 0:
                         res.cookie('sessionToken', undefined, {
@@ -56,7 +56,7 @@ async function rodar() {
                             httpOnly: true,
                             sameSite: 'strict',
                             expires: true,
-                            maxAge: 1000*60*60*24
+                            maxAge: 1
                         })
                         console.log('erro interno; mais de um usuário com o mesmo CPF.')
                         return res.status(500).send('erro interno no servidor.')
@@ -148,7 +148,7 @@ async function rodar() {
                         console.log('criaçao de conta: tem mais de um usuario aii ahahaiehaihaj')
                         return res.status(500).send('erro interno mt loko')
                 }
-                    let senha = bcrypt.hash(dados.senha, 10)
+                    let senha = await bcrypt.hash(dados.senha, 10)
                     e++
                     await con.query('INSERT INTO usuarios (nome, CPF, senha, email) VALUES (?,?,?,?)', [dados.nome, dados.cpf, senha, dados.email])
                     e++
@@ -211,7 +211,7 @@ async function rodar() {
                     console.log('cartao inexistente.')
                     return res.status(401).send('o cartao não existe.')
                 } else {
-                    let k2 = bcrypt.compare(dados.senha, k[0][0].senha)
+                    let k2 = await bcrypt.compare(dados.senha, k[0][0].senha)
                 e++
                 if (!k2) {
                     console.log('transacao: senha incorreta inserida.')
@@ -224,9 +224,9 @@ async function rodar() {
                         t=t2
                         e++
                         console.log('transacao: transacao registrada.')
-                        await con.query('UPDATE * FROM cartoes SET saldo=? WHERE CPF=?', [k[0][0].saldo - dados.quantia, l.cpf])
+                        await con.query('UPDATE cartoes SET saldo=? WHERE CPF=?', [k[0][0].saldo - dados.quantia, l.cpf])
                         e++
-                        await con.query('UPDATE * FROM cartoes SET saldo=? WHERE CPF=?', [d[0][0].saldo + dados.quantia, d[0][0].CPF])
+                        await con.query('UPDATE cartoes SET saldo=? WHERE CPF=?', [d[0][0].saldo + dados.quantia, d[0][0].CPF])
                         e++
                         console.log('transacao: transacao realizada com sucesso.')
                         return res.send('transação realizada com sucesso!')
@@ -275,7 +275,7 @@ async function rodar() {
             e++
             await con.query('SELECT * FROM cartoes WHERE numero=?', [numero])
             e++
-            let s = bcrypt.hash(senha, 10)
+            let s = await bcrypt.hash(senha, 10)
             e++
             await con.query('INSERT INTO cartoes (CPF, numero, senha, saldo) VALUES (?,?,?, 0)', [l.cpf, numero, s])
             return res.send('cartão registrado com sucesso!')
