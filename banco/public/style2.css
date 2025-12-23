@@ -1,0 +1,18 @@
+body {
+    min-height: 100vh;
+    min-width: 100vh;
+    overflow: hidden;
+}
+
+
+#card_cartoes {
+    z-index: 3;
+    position: absolute;
+    display: block;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 500px;
+    box-shadow: 0 0 5px blue;
+}
