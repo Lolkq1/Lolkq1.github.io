@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>seu perfil</title>
-    <script src="script.js" defer></script>
+    <title>crie sua conta ou faça o login</title>
+    <script src="create.js" defer></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 </head>
@@ -14,35 +14,37 @@
             <div class="nav-item">
                 <h1 class="title">banco</h1>
             </div>
-            <div class="nav-item">
-                <a href="/cartoes.html" class="nav-link">Cartões</a>
-            </div>
-            <div class="nav-item">
-                <a href="/transacoes.html" class="nav-link">Transações</a>
-            </div>
-            <div class="nav-item">
-                <a href="/" class="nav-link">Meu Perfil</a>
-            </div>
         </div>
         <div class="row mx-2 min-vh-100">
-            <div class="card p-0" id="card_perfil">
-            <div class="card-body w-100 h-100 mx-0 d-flex flex-column justify-content-between">
-                <div class="row-1 d-flex justify-content-between">
-                    <div class="col-3 px-2 d-flex justify-content-end align-items-center">
-                        <img src="default.jpg" alt="" class="card-img w-100 h-100">
-                    </div>
-                    <div class="col-9 px-2 d-flex justify-content-start align-items-center">
-                        <h class="card-title">@resenheiro</h>
-                    </div>
-                </div>
-                <div class="row-11 h-75">
-                    <p class="card-text">CPF: 111.111.111-11</a>
-                    <p class="card-text">email: neymar@gmail.com</p>
-                    <button class="btn btn-primary">Sair</button>
-                </div>
+        <div class="card p-0" id="card_perfil">
+            <div class="card-body w-100 h-100 mx-0 d-flex flex-column align-items-center justify-content-center" id="main">
+                <button class="btn btn-primary m-2" id="btn1">Criar conta</button>
+                <button class="btn btn-primary m-2" id="btn2">Login</button>
             </div>
         </div>
-
+        <div class="card p-0" id="card_login">
+            <div class="card-body w-100 h-100 mx-0 d-flex flex-column align-items-center justify-content-center" id="logintab">
+                <label for="j5">E-mail ou CPF</label>
+                <input type="text" class="form-control" id="j5" maxlength="80" required>
+                <label for="j6">Senha</label>
+                <input type="password" class="form-control" id="j6" required>
+                <button class="btn btn-primary my-2" id="btn3">Entrar</button>
+        </div>
+        </div>
+        <div class="card p-0" id="card_criar">
+            <div class="card-body w-100 h-100 mx-0 d-flex flex-column align-items-center justify-content-center" id="createtab">
+                <label for="j7">Nome</label>
+                <input type="text" class="form-control" id="j7">
+                <label for="j8">CPF</label>
+                <input type="text" class="form-control" maxlength="11" id="j8">
+                <label for="j9">E-mail</label>
+                <input type="email" class="form-control" id="j9">
+                <label for="j10">Senha</label>
+                <input class="form-control" type="password" id="j10">
+                <button class="btn btn-primary my-2" id="btn4">Criar</button>
+        </div>
+        </div>
+        
             <div class="col-2">
                 <div class="nav flex-column border-right h-100" id="coluna">
             <div class="nav-item">

@@ -39,6 +39,7 @@ async function rodar() {
                 return res.status(401).send('você já está logado em uma conta.')
             }
             try {
+                console.log('testano')
                 let k = jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY)
                 l=k
                 let j = await con.query('SELECT * FROM usuarios WHERE CPF=?', [k.cpf])
@@ -77,14 +78,17 @@ async function rodar() {
         let dados = req.body
         let e=0 //isso aq é pra debuggar
         let k='' // isso é p definir se ta tentando logar com cpf ou com email
-        try {
-            parseInt(req.body.login)
-            k='email'
-        } catch {
-            console.log('login feito por email.')
-            k='CPF'
+        console.log(dados.login)
+        switch (isNaN(parseInt(dados.login))) {
+            case true: 
+                console.log('login feito por email.')
+                k='email'
+            break;
+            default: 
+                console.log('login feito por cpf.')
+                k='CPF'
+            break;
         }
-
         try {
             let d1 = await con.query(`SELECT * FROM usuarios WHERE ${k}=?`, [dados.login])
             e++
@@ -150,7 +154,8 @@ async function rodar() {
                 }
                     let senha = await bcrypt.hash(dados.senha, 10)
                     e++
-                    await con.query('INSERT INTO usuarios (nome, CPF, senha, email) VALUES (?,?,?,?)', [dados.nome, dados.cpf, senha, dados.email])
+                    console.log(dados)
+                    await con.query('INSERT INTO usuarios VALUES (?,?,?,?)', [dados.cpf, dados.nome, senha, dados.email])
                     e++
                     let newDados = {
                         email: dados.email,
