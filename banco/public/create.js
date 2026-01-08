@@ -34,7 +34,12 @@ btn3.addEventListener("click" ,() => {
         }),
         headers: {'content-type': 'application/json'}
     }).then(res => {
-            res.text().then(obj => alert(obj))
+            if (res.ok) {
+            alert('usuário criado com sucesso!')
+            document.location.href = '/'
+        } else {
+            res.text().then(obj => {alert(obj)})
+        }
     })
 })
 
@@ -49,6 +54,11 @@ btn4.addEventListener('click', () => {
         }),
         headers: {'content-type': 'application/json'}
     }).then(res => {
-        res.text().then(obj => alert(obj))
+        if (res.ok) {
+            alert('usuário criado com sucesso!')
+            document.location.href = '/'
+        } else {
+            res.text().then(obj => {alert(obj)})
+        }
     })
 })

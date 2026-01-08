@@ -7,7 +7,7 @@ const cookie_parser = require('cookie-parser');
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
-// usuarios => CREATE TABLE usuarios (CPF INT PRIMARY KEY, nome VARCHAR(30) NOT NULL, senha VARCHAR(100), email VARCHAR(65) UNIQUE);
+// usuarios => CREATE TABLE usuarios (CPF VARCHAR(11) PRIMARY KEY, nome VARCHAR(30) NOT NULL, senha VARCHAR(100), email VARCHAR(65) UNIQUE);
 // cartoes => CREATE TABLE cartoes (CPF INT, numero PRIMARY KEY, senha VARCHAR(100), saldo (VE O TIPO DPS V2));
 // transacoes => CREATE TABLE transacoes (ID INT AUTO_INCREMENT PRIMARY KEY, rem INT, des INT, quantia (VE O TIPO DPS), data DATE)
 async function rodar() {
@@ -18,17 +18,19 @@ async function rodar() {
         port: 3306
     })
     app.use(express.json())
-    app.use(express.static(path.join(__dirname, 'public')))
     app.use(cookie_parser())
     let l;
     app.use(async (req, res, next) => {
         if (req.cookies.sessionToken == undefined || req.cookies.sessionToken == null) {
             switch (req.url) {
-                case '/paginaInicial.html':
+                case '/':
+                case '/cartoes.html':
+                case 'transacoes.html':
                 case '/transacao':
                 case '/criar_cartao':
                     return res.status(401).send('vc nao deveria estar aqui.')
                 default:
+                    app.use(express.static(path.join(__dirname, 'public')))
                     next()
                     break;
             }
@@ -36,13 +38,24 @@ async function rodar() {
             switch (req.url) {
                 case '/criar':
                 case '/login':
-                return res.status(401).send('você já está logado em uma conta.')
+                case '/create.html':
+                return res.status(401).send('você já está logado em uma conta.');
+                default:
+                    app.use(express.static(path.join(__dirname, 'public')))
+                    next()
+                    break;
             }
+            let e=0
             try {
                 console.log('testano')
+                console.log('o token aq',req.cookies.sessionToken)
                 let k = jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY)
+                console.log(k.cpf)
+                e++
                 l=k
                 let j = await con.query('SELECT * FROM usuarios WHERE CPF=?', [k.cpf])
+                console.log(j[0])
+                e++
                 switch (j[0].length) {
                     case 0:
                         res.cookie('sessionToken', undefined, {
@@ -64,8 +77,17 @@ async function rodar() {
                 }
                 next()
             } catch {
-                console.log('sessao inválida')
-                return res.status(401).send('sessao inválida.')
+                switch (e) {
+                    case 0:
+                        console.log('erro na verificaçao do jogador caro por JWT.')
+                        return res.status(401).send('sessao inválida.')
+                    case 1:
+                        console.log('erro na verificaçao do jogador por cpf.')
+                        return res.status(401).send('sessao inválida.')
+                    case 2:
+                        console.log('nao de nem agua')
+                        return res.status(401).send('sesion inbalida')
+                }
             }
         }
     })
@@ -108,11 +130,19 @@ async function rodar() {
             if (!d2) {
                 return res.status(401).send('senha incorreta inserida.')
             } else {
-                console.log('senha correta inserida. Autorizando acesso...')
-                let newDados = {
-                        email: dados.email,
+                let newDados;
+                switch(k) {
+                    case 'cpf':
+                        newDados = {
                         cpf: dados.cpf
+                    }
+                    break;
+                    case 'email':
+                        newDados = {
+                            cpf: d1[0][0].CPF
+                        }
                 }
+                console.log('senha correta inserida. Autorizando acesso...')
                 res.cookie('sessionToken', jwt.sign(newDados, process.env.SECRET_KEY), {
                     httpOnly: true,
                     sameSite: 'strict',
@@ -158,7 +188,6 @@ async function rodar() {
                     await con.query('INSERT INTO usuarios VALUES (?,?,?,?)', [dados.cpf, dados.nome, senha, dados.email])
                     e++
                     let newDados = {
-                        email: dados.email,
                         cpf: dados.cpf
                     }
                     res.cookie('sessionToken', jwt.sign(newDados, process.env.SECRET_KEY), {
@@ -302,6 +331,16 @@ async function rodar() {
             console.log(msg)
             return res.status(500).send('erro interno do servidor.')
         }
+    })
+
+    app.get('/deslogar', (req, res) => {
+        res.cookie('sessionToken', undefined, {
+            httpOnly: true,
+            sameSite: 'strict',
+            maxAge: '1',
+            expires: true
+        })
+        res.send('logout feito com sucesso!')
     })
 
     app.listen(8080, () => {
