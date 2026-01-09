@@ -23,3 +23,11 @@ body {
 #card_login, #card_criar {
     display: none;
 }
+
+#btn_registrar {
+    width: 35%;
+}
+
+#j4 {
+    font-size: 30px;
+}
