@@ -6,8 +6,8 @@ const mysql = require('mysql2/promise')
 const cookie_parser = require('cookie-parser');
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
-// usuarios => CREATE TABLE usuarios (CPF VARCHAR(11) PRIMARY KEY, nome VARCHAR(30) NOT NULL, senha VARCHAR(255), email VARCHAR(254) UNIQUE);
-// cartoes => CREATE TABLE cartoes (CPF VARCHAR(11), numero VARCHAR(16) PRIMARY KEY, senha VARCHAR(100), saldo DECIMAL(12, 2));
+// usuarios => CREATE TABLE usuarios (CPF VARCHAR(11) PRIMARY KEY, nome VARCHAR(30) NOT NULL, senha VARCHAR(255) NOT NULL, email VARCHAR(254) UNIQUE);
+// cartoes => CREATE TABLE cartoes (CPF VARCHAR(11) NOT NULL, numero VARCHAR(16) PRIMARY KEY, senha VARCHAR(100) NOT NULL, saldo DECIMAL(12, 2));
 // transacoes => CREATE TABLE transacoes (ID BIGINT AUTO_INCREMENT PRIMARY KEY, rem VARCHAR(16), des VARCHAR(16), quantia DECIMAL(12, 2)), data DATETIME, rem_cpf VARCHAR(11), des_cpf VARCHAR(11));
 async function rodar() {
     const con = await mysql.createConnection({
@@ -27,9 +27,8 @@ async function rodar() {
                 case '/registrar_cartao.html':
                 case '/transacao':
                 case '/criar_cartao':
-                    return res.status(401).send('vc nao deveria estar aqui.')
+                    return res.status(401).send('vc nao deveria estar aqui.');
                 default:
-                    app.use(express.static(path.join(__dirname, 'public')))
                     next()
                     break;
             }
@@ -39,10 +38,6 @@ async function rodar() {
                 case '/login':
                 case '/create.html':
                 return res.status(401).send('você já está logado em uma conta.');
-                default:
-                    app.use(express.static(path.join(__dirname, 'public')))
-                    next()
-                    break;
             }
             let e=0
             try {
@@ -86,9 +81,7 @@ async function rodar() {
         }
     })
 
-    async function geradordenumero(dados) {
-        //dps eu faço
-    }
+    app.use(express.static(path.join(__dirname, 'public')))
 
     app.post('/login', async (req, res) => {
         let dados = req.body
@@ -139,11 +132,15 @@ async function rodar() {
                 switch(k) {
                     case 'cpf':
                         newDados = {
-                        cpf: dados.cpf
+                        nome: d1[0][0].nome,
+                        email: d1[0][0].email,
+                        cpf: dados.login
                     }
                     break;
                     case 'email':
                         newDados = {
+                            nome: d1[0][0].nome,
+                            email: dados.login,
                             cpf: d1[0][0].CPF
                         }
                 }
@@ -154,7 +151,7 @@ async function rodar() {
                     expires: true,
                     maxAge: 1000*60*60*24
                 })
-                res.send('usuário autorizado!')
+                return res.send('usuário autorizado!')
             }
             
         } catch {
@@ -174,7 +171,8 @@ async function rodar() {
     app.post('/criar', async (req, res) => {
         let dados = req.body
         let e=0
-        if (dados.cpf.length != 11 || dados.email.length > 254 || dados.nome.length > 30 || dados.senha.length > 254) {
+
+        if (dados.cpf.toString().length != 11 || dados.email.length > 254 || dados.nome.length > 30 || dados.senha.length > 254 || dados.senha.length === 0 || dados.email.length === 0) {
             return res.status(401).send('dados formatados incorretamente; verifique e tente novamente.')
         }
         try {
@@ -196,7 +194,9 @@ async function rodar() {
                     await con.query('INSERT INTO usuarios VALUES (?,?,?,?)', [dados.cpf, dados.nome, senha, dados.email])
                     e++
                     let newDados = {
-                        cpf: dados.cpf
+                        cpf: dados.cpf,
+                        nome: dados.nome,
+                        email: dados.email
                     }
                     res.cookie('sessionToken', jwt.sign(newDados, process.env.SECRET_KEY), {
                         sameSite: 'strict',
@@ -205,10 +205,7 @@ async function rodar() {
                         maxAge: 1000*60*60*24
                     })
                     console.log('criaçao de conta: usuário criado com sucesso.')
-                    return res.send(JSON.stringify({
-                        nome: dados.nome,
-                        email: dados.email
-                    }))
+                    return res.send('usuário criado com sucesso!')
         } catch {
             switch (e) {
                 case 0: 
@@ -221,7 +218,7 @@ async function rodar() {
                     console.log('erro ao inserir usuário')
                     break;
             }
-            res.status(500).send('erro interno do servidor.')
+            return res.status(500).send('erro interno do servidor.')
         }
     })
 
@@ -241,7 +238,7 @@ async function rodar() {
             break;
         }
         try {
-            let l2 = await jwt.verify(req.cookies.sessionToken);
+            let l2 = await jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY);
             let l = await con.query("SELECT * FROM users WHERE CPF=?", l2.cpf)
             e++
             let d = await con.query(`SELECT * FROM usuarios WHERE ${a}=?`, [dados.des.chave])
@@ -257,7 +254,7 @@ async function rodar() {
                 let k3 = await con.query("SELECT * FROM cartoes WHERE CPF=?", [d[0][0].CPF])
                 e++
                 if (k[0].length === 0 || k3[0].length === 0) {
-                    console.log('cartao(es) inexistente.')
+                    console.log('cartao(es) inexistente(s).')
                     return res.status(401).send('o(s) cartao(es) não existe(m).')
                 } else {
                     let k2 = await bcrypt.compare(dados.senha, k[0][0].senha)
@@ -310,41 +307,47 @@ async function rodar() {
         let {senha_cartao, senha_usuario} = dados
         let e=0
         try {
-            let l2 = await jwt.verify(req.cookies.sessionToken);
-            let l = await con.query("SELECT * FROM users WHERE CPF=?", l2.cpf)
+            let l2 = await jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY);
+            let l = await con.query("SELECT * FROM usuarios WHERE CPF=?", l2.cpf)
             e++
             let r = await bcrypt.compare(senha_usuario, l[0][0].senha)
-            if (!r) {
-                return res.status(401).send('senha de usuário incorreta.')
+            if (r) {
+                let numero = parseInt(Math.random()*10000000000000000)
+            e++
+            while (1===1) {
+                let a = await con.query('SELECT * FROM cartoes WHERE numero=?', [numero])
+                if (a[0].length === 0) {
+                    break;
+                } else {
+                    numero = parseInt(Math.random()*10000000000000000)
+                }
             }
-            let numero = await geradordenumero(dados)
-            e++
-            await con.query('SELECT * FROM cartoes WHERE numero=?', [numero])
-            e++
             let s = await bcrypt.hash(senha_cartao, 10)
             e++
-            await con.query('INSERT INTO cartoes (CPF, numero, senha, saldo) VALUES (?,?,?, 0)', [l[0][0].cpf, numero, s])
+            console.log(l[0][0])
+            await con.query('INSERT INTO cartoes (CPF, numero, senha, saldo) VALUES (?,?,?, 0.00)', [l[0][0].CPF, numero, s])
             return res.send('cartão registrado com sucesso!')
-        } catch {
+            } else {
+            return res.status(401).send('senha de usuário incorreta.')
+            }
+        } catch(err) {
+            console.log(err, 'ta aqui jogadô')
             switch (e) {
                 case 0:
                     msg = 'criação de cartao: erro na verificaçao do usuario.'
                     break;
                 case 1:
-                    msg = 'criação de cartão: erro na geracao de numero do cartao.'
+                    msg = 'criação de cartão: senha incorreta inserida.'
                     break;
                 case 2:
-                    msg = 'criação de cartão: erro na verificaçao de cartoes.'
-                    break;
-                case 3:
                     msg = 'criação de cartão: erro na geração de senha.'
                     break;
-                case 4:
+                case 3:
                     msg = 'criação de cartão: erro no registro do cartao na base de dados.'
                     break;
             }
             console.log(msg)
-            return res.status(500).send('erro interno do servidor.')
+            return res.status(401).send(msg)
         }
     })
 
@@ -355,13 +358,13 @@ async function rodar() {
             maxAge: '1',
             expires: true
         })
-        res.send('logout feito com sucesso!')
+        return res.send('logout feito com sucesso!')
     })
 
     app.get('/get_transacoes', async (req, res) => {
         let a=true
         try {
-            let rem = await jwt.verify(req.cookies.sessionToken)
+            let rem = await jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY)
             a=false
             let tr = await con.query("SELECT * FROM transacoes WHERE rem_cpf=?", [rem.cpf])
             return res.send(tr[0])
@@ -382,11 +385,12 @@ async function rodar() {
     app.get('/get_cartoes', async (req,res) => {
         let a=true
         try {
-            let user = await jwt.verify(req.cookies.sessionToken)
+            let user = await jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY)
             a=false
             let tr = await con.query("SELECT numero,saldo FROM cartoes WHERE CPF=?", [user.cpf])
             return res.send(tr[0])
-        } catch {
+        } catch(err) {
+            console.log(err, 'ta aqui o erro')
             let code;
             let msg;
             if (a) {
@@ -397,6 +401,18 @@ async function rodar() {
                 code = 500
             }
             return res.status(code).send(msg)
+        }
+    })
+
+    app.get('/dados', async (req, res) => {
+        try {
+            let k = await jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY)
+            console.log(k.cpf, k.nome, k.email)
+            let dados = {cpf: k.cpf, nome: k.nome, email: k.email}
+            return res.send(dados)
+        } catch(err) {
+            console.log(err)
+            return res.status(401).send('dados inválidos')
         }
     })
     app.listen(8080, () => {

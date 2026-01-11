@@ -9,10 +9,10 @@ btn.addEventListener('click', () => {
             senha_cartao: j5.value,
             senha_usuario: j6.value
         })
-    }).then(res => res.text()).then(obj => {
+    }).then(res => res.text().then(obj => {
         alert(obj)
         if (res.ok) {
-            document.location.href='/cartoes.html'
+            document.location.href = '/cartoes.html'
         }
-    })
+    }))
 })

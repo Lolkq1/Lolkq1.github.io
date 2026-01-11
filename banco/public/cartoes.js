@@ -34,15 +34,12 @@
 
 
 
-const btn = document.querySelector("#btn_registrar")
 
-btn.addEventListener("click", () => {
     fetch('/get_cartoes', {
         credentials: "include"
-    }).then(res => res.text()).then(obj => {
-        //receber todos os cartooesss
+    }).then(res => res.text()).then(obj => JSON.parse(obj)).then(obj2 => {
         const main_r = document.querySelector("#main")
-        for (x in obj) {
+        for (let x of obj2) {
             let card = document.createElement('div')
             card.className = 'card w-25 m-2'
             let card2 = document.createElement('div')
@@ -57,10 +54,10 @@ btn.addEventListener("click", () => {
             imgcard.className = 'card-image w-100'
             imgcard.src = 'credit-card.jpg'
             let p1 = document.createElement('p')
-            p1.textContent = 'Número: '+ obj[x].numero
+            p1.textContent = 'Número: '+ x.numero
             p1.className = 'card-text'
             let p2 = document.createElement('p')
-            p2.textContent = 'Saldo: '+ obj[x].saldo
+            p2.textContent = 'Saldo: '+ x.saldo
             p2.className = 'card-text'
             let btn = document.createElement('button')
             btn.className = 'btn btn-primary'
@@ -76,4 +73,3 @@ btn.addEventListener("click", () => {
             column2.appendChild(btn)
         }
     })
-})

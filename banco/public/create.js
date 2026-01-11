@@ -35,7 +35,7 @@ btn3.addEventListener("click" ,() => {
         headers: {'content-type': 'application/json'}
     }).then(res => {
             if (res.ok) {
-            alert('usuário criado com sucesso!')
+            alert('usuário autorizado!')
             document.location.href = '/'
         } else {
             res.text().then(obj => {alert(obj)})
