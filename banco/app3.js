@@ -100,12 +100,12 @@ async function rodar() {
         }
         switch(k) {
             case 'CPF':
-                if (k.length != 11) {
+                if (dados.login.length != 11) {
                     return res.status(401).send('cpf incorretamente formatado.')
                 }
                 break;
             case 'email':
-                if (k.length > 254) {
+                if (dados.login.length > 254) {
                     return res.status(401).send('email excede o tamanho permitido.')
                 }
         }
@@ -130,7 +130,7 @@ async function rodar() {
             } else {
                 let newDados;
                 switch(k) {
-                    case 'cpf':
+                    case 'CPF':
                         newDados = {
                         nome: d1[0][0].nome,
                         email: d1[0][0].email,
@@ -143,6 +143,7 @@ async function rodar() {
                             email: dados.login,
                             cpf: d1[0][0].CPF
                         }
+                        break;
                 }
                 console.log('senha correta inserida. Autorizando acesso...')
                 res.cookie('sessionToken', jwt.sign(newDados, process.env.SECRET_KEY), {
@@ -154,7 +155,8 @@ async function rodar() {
                 return res.send('usuário autorizado!')
             }
             
-        } catch {
+        } catch(err) {
+            console.log(err)
             console.log('etapas sem erro:', e)
             switch (e) {
                 case 0:
@@ -183,6 +185,9 @@ async function rodar() {
                         break;
                     case 1:
                         console.log('criaçao de conta: já existe alguem com esse CPF/email registrado.')
+                        return res.status(401).send('já existe uma conta com esse CPF/email cadastrado.')
+                    case 2:
+                        console.log('criacao de conta: já existe alguem com esse CPF/email.')
                         return res.status(401).send('já existe uma conta com esse CPF/email cadastrado.')
                     default:
                         console.log('criaçao de conta: tem mais de um usuario aii ahahaiehaihaj')
