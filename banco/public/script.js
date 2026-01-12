@@ -23,3 +23,4 @@ fetch('/dados', {
     console.log('ero')
     }
 })
+

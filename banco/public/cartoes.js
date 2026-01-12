@@ -57,11 +57,14 @@
             p1.textContent = 'Número: '+ x.numero
             p1.className = 'card-text'
             let p2 = document.createElement('p')
-            p2.textContent = 'Saldo: '+ x.saldo
+            p2.textContent = 'Saldo: R$'+ x.saldo
             p2.className = 'card-text'
             let btn = document.createElement('button')
             btn.className = 'btn btn-primary'
-            btn.textContent = 'Ver extrato'
+            btn.textContent = 'Realizar transferência'
+            btn.addEventListener("click", () => {
+                document.location.href='/transacao.html?cartao='+x.numero
+            })
             main_r.appendChild(card)
             card.appendChild(card2)
             card2.appendChild(r)

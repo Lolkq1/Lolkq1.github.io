@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 // usuarios => CREATE TABLE usuarios (CPF VARCHAR(11) PRIMARY KEY, nome VARCHAR(30) NOT NULL, senha VARCHAR(255) NOT NULL, email VARCHAR(254) UNIQUE);
 // cartoes => CREATE TABLE cartoes (CPF VARCHAR(11) NOT NULL, numero VARCHAR(16) PRIMARY KEY, senha VARCHAR(100) NOT NULL, saldo DECIMAL(12, 2));
-// transacoes => CREATE TABLE transacoes (ID BIGINT AUTO_INCREMENT PRIMARY KEY, rem VARCHAR(16), des VARCHAR(16), quantia DECIMAL(12, 2)), data DATETIME, rem_cpf VARCHAR(11), des_cpf VARCHAR(11));
+// transacoes => CREATE TABLE transacoes (ID BIGINT AUTO_INCREMENT PRIMARY KEY, rem VARCHAR(16) NOT NULL, des VARCHAR(16) NOT NULL, quantia DECIMAL(12, 2) NOT NULL, data DATETIME(3) NOT NULL, rem_cpf VARCHAR(11) NOT NULL, des_cpf VARCHAR(11) NOT NULL, des_nome VARCHAR(30) NOT NULL);
 async function rodar() {
     const con = await mysql.createConnection({
         user: process.env.USER,
@@ -232,6 +232,7 @@ async function rodar() {
         let dados = req.body
         let a=''
         let e=0
+        dados.quantia = parseInt(dados.quantia)
         switch (isNaN(parseInt(dados.des.chave))) {
             case true: 
                 console.log('chave: email.')
@@ -242,9 +243,13 @@ async function rodar() {
                 a='CPF'
             break;
         }
+        if (dados.quantia <= 0) {
+            return res.status(401).send('Apenas valores acima de R$0.00 são permitidos para transação.')
+        }
+
         try {
             let l2 = await jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY);
-            let l = await con.query("SELECT * FROM users WHERE CPF=?", l2.cpf)
+            let l = await con.query("SELECT * FROM usuarios WHERE CPF=?", l2.cpf)
             e++
             let d = await con.query(`SELECT * FROM usuarios WHERE ${a}=?`, [dados.des.chave])
             e++
@@ -257,12 +262,18 @@ async function rodar() {
             } else {
                 let k = await con.query('SELECT * FROM cartoes WHERE numero=?', [dados.rem.numero])
                 let k3 = await con.query("SELECT * FROM cartoes WHERE CPF=?", [d[0][0].CPF])
+                console.log(d[0][0])
+                console.log(dados.rem.numero)
+                console.log(k[0], k3[0])
                 e++
                 if (k[0].length === 0 || k3[0].length === 0) {
                     console.log('cartao(es) inexistente(s).')
                     return res.status(401).send('o(s) cartao(es) não existe(m).')
                 } else {
                     let k2 = await bcrypt.compare(dados.senha, k[0][0].senha)
+                    if (k[0][0].CPF != l2.cpf) {
+                        return res.status(401).send('usuário não autorizado.')
+                    }
                 e++
                 if (!k2) {
                     console.log('transacao: senha incorreta inserida.')
@@ -271,8 +282,12 @@ async function rodar() {
                     console.log('transacao: senha correta inserida.')
                     if (k[0][0].saldo >= dados.quantia) {
                         console.log('transacao: saldo suficiente. Autorizado.')
-                        let t2 = await con.query('START TRANSACTION; INSERT INTO transacoes (rem, des, quantia, data, rem_cpf, des_cpf) VALUES (?,?,?, NOW(),?,?); UPDATE cartoes SET saldo=? WHERE numero=?; UPDATE cartoes SET saldo=? WHERE numero=?; IF @@ERROR <> 0 BEGIN ROLLBACK; END ELSE BEGIN COMMIT; END;'
-                        , dados.rem.numero, k3[0][0].numero, dados.quantia, l[0][0].CPF, k[0][0].saldo - dados.quantia, dados.rem.numero, d[0][0].saldo + dados.quantia, k3[0][0].numero)
+                        await con.beginTransaction()
+                        let k1 = await con.query('UPDATE cartoes SET saldo=? WHERE numero=?', [parseInt(k[0][0].saldo) - dados.quantia, dados.rem.numero])
+                        let k2 = await con.query('UPDATE cartoes SET saldo=? WHERE numero=?', [parseInt(k3[0][0].saldo) + dados.quantia, k3[0][0].numero])
+                        console.log(k1, k2)
+                        await con.query('INSERT INTO transacoes (rem, des, quantia, data, rem_cpf, des_cpf, des_nome) VALUES (?,?,?, NOW(),?,?,?);', [dados.rem.numero, k3[0][0].numero, dados.quantia, l[0][0].CPF, d[0][0].CPF, d[0][0].nome])
+                        await con.commit()
                         e++
                         return res.send('transação realizada com sucesso!')
                     } else {
@@ -282,7 +297,8 @@ async function rodar() {
                 }
                 }
             }
-        } catch {
+        } catch(err) {
+            console.log(err)
             let msg=''
             switch (e) {
                 case 0:
@@ -298,8 +314,10 @@ async function rodar() {
                     msg = 'transacao: erro na comparacao de senhas.'
                     break;
                 case 4:
+                    con.rollback()
                     msg = 'transacao incompleta: erro interno.'
                 default:
+                    con.rollback()
                     msg = 'erro incomum.'
                     break;
             }
@@ -371,7 +389,14 @@ async function rodar() {
         try {
             let rem = await jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY)
             a=false
-            let tr = await con.query("SELECT * FROM transacoes WHERE rem_cpf=?", [rem.cpf])
+            let tr = await con.query("SELECT * FROM transacoes WHERE rem_cpf=? OR des_cpf=? ORDER BY data DESC", [rem.cpf, rem.cpf])
+            for (x of tr[0]) {
+                if (x.rem_cpf === rem.cpf) {
+                    x.dir = 'Enviado'
+                } else {
+                    x.dir = 'Recebido'
+                }
+            }
             return res.send(tr[0])
         } catch {
             let code;
