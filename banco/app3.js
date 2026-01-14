@@ -7,7 +7,7 @@ const cookie_parser = require('cookie-parser');
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 // usuarios => CREATE TABLE usuarios (CPF VARCHAR(11) PRIMARY KEY, nome VARCHAR(30) NOT NULL, senha VARCHAR(255) NOT NULL, email VARCHAR(254) UNIQUE);
-// cartoes => CREATE TABLE cartoes (CPF VARCHAR(11) NOT NULL, numero VARCHAR(16) PRIMARY KEY, senha VARCHAR(100) NOT NULL, saldo DECIMAL(12, 2));
+// cartoes => CREATE TABLE cartoes (CPF VARCHAR(11) NOT NULL, numero VARCHAR(16) PRIMARY KEY, senha VARCHAR(100) NOT NULL, saldo DECIMAL(12, 2), classif VARCHAR(2) NOT NULL DEFAULT 00);
 // transacoes => CREATE TABLE transacoes (ID BIGINT AUTO_INCREMENT PRIMARY KEY, rem VARCHAR(16) NOT NULL, des VARCHAR(16) NOT NULL, quantia DECIMAL(12, 2) NOT NULL, data DATETIME(3) NOT NULL, rem_cpf VARCHAR(11) NOT NULL, des_cpf VARCHAR(11) NOT NULL, des_nome VARCHAR(30) NOT NULL);
 async function rodar() {
     const con = await mysql.createConnection({
@@ -226,13 +226,12 @@ async function rodar() {
             return res.status(500).send('erro interno do servidor.')
         }
     })
-
     app.post('/transacao', async (req, res) => {
-        // vai receber: as credenciais no cookie (verificaçao jwt), destinatário, quantia, numero, senha, cartao do destinatario
+        // vai receber: as credenciais no cookie (verificaçao jwt), destinatário, quantia, numero, senha, cartao do destinatario, qual cartao do destinatario.
         let dados = req.body
         let a=''
         let e=0
-        dados.quantia = parseInt(dados.quantia)
+        dados.quantia = parseFloat(dados.quantia)
         switch (isNaN(parseInt(dados.des.chave))) {
             case true: 
                 console.log('chave: email.')
@@ -258,10 +257,10 @@ async function rodar() {
                 return res.status(401).send('transacao: destinatário inexistente.')
             } else if (d[0].length > 1) {
                 console.log('transacao: mais de um usuário com o mesmo cpf ou email.')
-                return res.status(500).send('erro interno mt loko')
+                return res.status(500).send('erro interno')
             } else {
                 let k = await con.query('SELECT * FROM cartoes WHERE numero=?', [dados.rem.numero])
-                let k3 = await con.query("SELECT * FROM cartoes WHERE CPF=?", [d[0][0].CPF])
+                let k3 = await con.query("SELECT * FROM cartoes WHERE CPF=? AND classif=?", [d[0][0].CPF, dados.des.cartao])
                 console.log(d[0][0])
                 console.log(dados.rem.numero)
                 console.log(k[0], k3[0])
@@ -283,8 +282,8 @@ async function rodar() {
                     if (k[0][0].saldo >= dados.quantia) {
                         console.log('transacao: saldo suficiente. Autorizado.')
                         await con.beginTransaction()
-                        let k1 = await con.query('UPDATE cartoes SET saldo=? WHERE numero=?', [parseInt(k[0][0].saldo) - dados.quantia, dados.rem.numero])
-                        let k2 = await con.query('UPDATE cartoes SET saldo=? WHERE numero=?', [parseInt(k3[0][0].saldo) + dados.quantia, k3[0][0].numero])
+                        let k1 = await con.query('UPDATE cartoes SET saldo=? WHERE numero=?', [parseFloat(k[0][0].saldo) - dados.quantia, dados.rem.numero])
+                        let k2 = await con.query('UPDATE cartoes SET saldo=? WHERE numero=?', [parseFloat(k3[0][0].saldo) + dados.quantia, k3[0][0].numero])
                         console.log(k1, k2)
                         await con.query('INSERT INTO transacoes (rem, des, quantia, data, rem_cpf, des_cpf, des_nome) VALUES (?,?,?, NOW(),?,?,?);', [dados.rem.numero, k3[0][0].numero, dados.quantia, l[0][0].CPF, d[0][0].CPF, d[0][0].nome])
                         await con.commit()
@@ -417,7 +416,7 @@ async function rodar() {
         try {
             let user = await jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY)
             a=false
-            let tr = await con.query("SELECT numero,saldo FROM cartoes WHERE CPF=?", [user.cpf])
+            let tr = await con.query("SELECT numero,saldo,classif FROM cartoes WHERE CPF=?", [user.cpf])
             return res.send(tr[0])
         } catch(err) {
             console.log(err, 'ta aqui o erro')
@@ -443,6 +442,52 @@ async function rodar() {
         } catch(err) {
             console.log(err)
             return res.status(401).send('dados inválidos')
+        }
+    })
+
+    app.post('/cartao_config', async (req, res) => {
+        let a = req.body
+        let a2 = 0
+        if (a[1].length === 0) {
+            return res.send('Configurações mantidas.')
+        }
+        for (x of a[1]) {
+            a2 += x.codigo
+        }
+        try {
+            let b = await jwt.verify(req.cookies.sessionToken, process.env.SECRET_KEY)
+            if (isNaN(parseInt(a2))) {
+                return res.status(401).send('dados inválidos inseridos.')
+            }
+            let b2 = await con.query('SELECT * FROM usuarios WHERE CPF=?', b.cpf)
+            let r = await bcrypt.compare(a[0], b2[0][0].senha)
+            if (!r) {
+                return res.status(401).send('senha incorreta inserida.')
+            } 
+            let found = 0
+            con.beginTransaction()
+        for (x of a[1]) {
+            console.log(x)
+            console.log(b.cpf)
+            let k = await con.query('SELECT * FROM cartoes WHERE CPF=? AND numero=?', [b.cpf, x.codigo])
+            console.log(k[0])
+            if (k[0].length != 0) {
+                   found++
+                   await con.query('UPDATE cartoes SET classif="00" WHERE classif=? AND CPF=?', ['0'+ x.numero, b.cpf])
+                   await con.query('UPDATE cartoes SET classif=? WHERE numero=? AND CPF=?',['0'+ x.numero, x.codigo.trim(), b.cpf])
+            }
+        }
+            if (found != a[1].length) {
+                await con.rollback()
+                return res.status(401).send('Um ou mais cartões não foram encontrados.')
+            }
+
+            await con.commit()
+            return res.send('Configuração salva!')
+        } catch(err) {
+            console.log(err)
+            await con.rollback()
+            return res.status(500).send('erro interno do servidor')
         }
     })
     app.listen(8080, () => {

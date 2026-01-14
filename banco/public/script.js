@@ -3,17 +3,13 @@ const nome = document.querySelector("#nome")
 const email = document.querySelector("#email")
 const cpf = document.querySelector("#cpf")
 btn.addEventListener("click", () => {
-    fetch('/deslogar', {
-        credentials: "include"
-    }).then(res => res.text()).then(obj => {
+    fetch('/deslogar').then(res => res.text()).then(obj => {
         alert(obj)
         document.location.href = '/create.html'
     })
 })
 
-fetch('/dados', {
-    credentials: "include"
-}).then(res => res.text()).then(obj => {
+fetch('/dados').then(res => res.text()).then(obj => {
     try {
     obj = JSON.parse(obj)
     nome.textContent = obj.nome,

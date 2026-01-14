@@ -31,3 +31,27 @@ body {
 #j4 {
     font-size: 30px;
 }
+
+#card_config {
+    z-index: 3;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 500px;
+    box-shadow: 0 0 5px blue;
+    display: block;
+}
+
+#card_transacao {
+    z-index: 3;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 500px;
+    box-shadow: 0 0 5px blue;
+    display: block;
+}

@@ -1,6 +1,4 @@
-fetch('/get_transacoes', {
-    credentials: "include"
-}).then(res => {
+fetch('/get_transacoes').then(res => {
     if (res.ok) {
         res.text().then(obj=> 
     // esperar receber um array com todas as transacoes.

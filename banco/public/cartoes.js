@@ -35,11 +35,10 @@
 
 
 
-    fetch('/get_cartoes', {
-        credentials: "include"
-    }).then(res => res.text()).then(obj => JSON.parse(obj)).then(obj2 => {
+    fetch('/get_cartoes').then(res => res.text()).then(obj => JSON.parse(obj)).then(obj2 => {
         const main_r = document.querySelector("#main")
         for (let x of obj2) {
+            console.log(x.classif)
             let card = document.createElement('div')
             card.className = 'card w-25 m-2'
             let card2 = document.createElement('div')
@@ -62,6 +61,12 @@
             let btn = document.createElement('button')
             btn.className = 'btn btn-primary'
             btn.textContent = 'Realizar transferência'
+            if (x.classif !='00') {
+                let p3 = document.createElement('p')
+                p3.textContent = 'Cartão '+ parseInt(x.classif)
+                column2.appendChild(p3)
+                p3.style.color = 'lime'
+            }
             btn.addEventListener("click", () => {
                 document.location.href='/transacao.html?cartao='+x.numero
             })
