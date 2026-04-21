@@ -2,6 +2,7 @@ html {
     margin: 0 0 auto;
     min-width: 100vh;
     min-height: 100vh;
+    overflow-y: hidden;
 }
 
 body {
@@ -21,4 +22,9 @@ body {
 
 .container {
     height: 100vh;
+}
+
+#token {
+    overflow-y: scroll;
+    overflow-wrap: break-word;
 }
