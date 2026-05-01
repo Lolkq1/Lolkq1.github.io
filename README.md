@@ -1,1 +1,1 @@
-coletânea de alguns projetos acadêmicos e outros pessoais :D
+coletânea de alguns projetos acadêmicos e outros pessoais
